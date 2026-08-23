@@ -1,94 +1,51 @@
-<div align="center">
+# Visual Replica Skill Pro v12 — Engineering Quality
 
-# 🧬 Visual Replica Skill Pro
+A focused **Agent Skill + visual QA toolkit** for high-fidelity screenshot-driven UI reconstruction.
 
-**Make AI behave like a senior visual frontend engineer.**
+The package deliberately separates responsibilities:
 
-[![Agent Skill](https://img.shields.io/badge/Agent%20Skill-visual--replica--pro-8B5CF6?style=for-the-badge&logo=robot)]
-[![Version](https://img.shields.io/badge/version-v3-6f42c1?style=for-the-badge)]
-[![License](https://img.shields.io/github/license/C-surfing/pixel-perfect-ui?style=for-the-badge)]
-[![Clients](https://img.shields.io/badge/Cursor%20·%20Claude%20Code%20·%20Codex-0ea5e9?style=for-the-badge)]
+- `SKILL.md` — expert workflow and guardrails for Cursor / Claude Code / Codex-like agents.
+- `visual_replica/` — deterministic Python toolkit for analysis, comparison, diagnosis, reporting and benchmarking.
+- `scripts/capture.mjs` — deterministic web capture via Playwright.
+- `references/` — deeper diagnosis and platform guidance loaded only when needed.
+- `tests/` — synthetic tests that verify the core measurements rather than merely asserting placeholders.
 
-*An expert-level UI replication skill — screenshot-first reconstruction with visual QA, regression thinking, diff diagnosis, and continuous improvement.*
+## Quick start
 
-</div>
+```bash
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\\Scripts\\activate
+pip install -e .
 
----
-
-## 🎯 Goal
-
-Make AI behave like a **senior visual frontend engineer** — not someone who makes a *beautiful new design*, but someone who **reproduces the existing visual target faithfully while keeping production-quality code**.
-
-## 🧭 Design Principles
-
-> **Reference image = visual specification.**
->
-> **Rendered application = only reliable evidence.**
->
-> **Never claim success from code inspection alone.**
-
-## 🔁 The Workflow
-
-```mermaid
-flowchart TD
-    A["Task Planning<br/>(A: existing project · B: screenshot-only<br/>C: multi-reference · D: responsive)"] --> B["Visual Analysis<br/>(structure · geometry · typography · assets)"]
-    B --> C["Implementation<br/>(viewport → macro → components → details)"]
-    C --> D["Verification Loop<br/>render → capture → compare → diagnose"]
-    D --> E{"Differences?"}
-    E -->|yes| F["Classified Diagnosis<br/>(global offset · vertical drift<br/>typography · component)"]
-    F --> G["Minimal Fix"]
-    G --> D
-    E -->|no| H["Quality Gates<br/>(visual + engineering + validation)"]
-    H --> I["Continuous Improvement<br/>(failure log · reusable patterns)"]
-    style H fill:#d1fae5,stroke:#059669
+visual-replica doctor
+visual-replica analyze reference.png --out .visual-replica/reference-analysis.json
+visual-replica compare reference.png candidate.png --out-dir .visual-replica/compare
+visual-replica diagnose .visual-replica/compare/comparison.json --repo . --out .visual-replica/diagnosis.json
+visual-replica report --comparison .visual-replica/compare/comparison.json --diagnosis .visual-replica/diagnosis.json --out-dir .visual-replica/report
 ```
 
-## ✨ What makes it *Pro*
+For browser capture:
 
-| Capability | How |
-| :--- | :--- |
-| **Task-aware planning** | Classifies 4 task types (existing project / screenshot-only / multi-reference / responsive) before touching code |
-| **Classified diagnosis** | Global offset → vertical drift → typography mismatch → component mismatch, each with its own check-list |
-| **Implementation ordering** | Viewport first, micro-details last — never tune shadows while layout is wrong |
-| **Iteration learning** | Every iteration records Problem → Hypothesis → Change → Result; only keep improvements, rollback regressions |
-| **Quality gates** | Visual + engineering + validation — no screenshot hacks, no excessive absolute positioning |
-| **Continuous improvement** | Failure patterns and successful fixes feed future tasks |
-
-## 📦 Structure
-
-```text
-visual-replica-skill-pro/
-├── SKILL.md                        # The skill itself
-├── references/
-│   ├── task-planning.md            #   task type classification
-│   ├── diff-to-fix.md              #   diagnosis → fix mapping
-│   ├── quality-gates.md            #   acceptance criteria
-│   ├── platform-guidelines.md      #   platform-specific rules
-│   └── anti-patterns.md            #   what NOT to do
-├── templates/
-│   ├── visual-spec.json            #   visual specification output
-│   └── iteration-log.json          #   iteration learning record
-├── learning/
-│   └── failure-log.template.md     #   failure pattern ledger
-├── scripts/README.md               #   tooling notes
-└── README.md
+```bash
+npm install
+npx playwright install chromium
+visual-replica capture http://localhost:3000 --width 390 --height 844 --out candidate.png
 ```
 
-## 🚀 Install
+## Optional high-cost extras
 
-Copy the folder into any supported skill location:
+Core installation includes Pillow, NumPy, scikit-image and OpenCV. These are enough for pixel metrics, SSIM, pyramid multi-scale SSIM, edge comparison, layout proposals and hotspot analysis.
 
-```text
-.cursor/skills/visual-replica-skill-pro/
-.claude/skills/visual-replica-skill-pro/
-.codex/skills/visual-replica-skill-pro/
-.agents/skills/visual-replica-skill-pro/
+Optional extras:
+
+```bash
+pip install -e '.[deep]'
+pip install -e '.[ocr]'
 ```
 
-## 📜 License
+- `deep`: PyTorch MS-SSIM + LPIPS. LPIPS is a distance: **lower is more similar** and the official implementation expects RGB tensors normalized to `[-1, 1]`.
+- `ocr`: pytesseract as the lightweight OCR adapter. PaddleOCR can also be installed separately and selected with `--ocr paddle`.
 
-[MIT](LICENSE) © 2026 [C-surfing](https://github.com/C-surfing)
+## Design goal
 
----
-
-<p align="center">Reproduce the reference, not an interpretation of it. 🎯</p>
+This is not another autonomous UI agent. The coding agent edits code; Visual Replica supplies a disciplined workflow and visual evidence.

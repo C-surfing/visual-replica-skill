@@ -1,0 +1,9 @@
+{
+  "cases": [
+    {
+      "name": "synthetic-shift",
+      "reference": "examples/synthetic/reference.png",
+      "candidate": "examples/synthetic/candidate.png"
+    }
+  ]
+}
