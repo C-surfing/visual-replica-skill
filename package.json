@@ -1,0 +1,12 @@
+{
+  "name": "pixel-perfect-ui-skill-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "capture": "node scripts/capture.mjs",
+    "dom": "node scripts/dom_snapshot.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.50.0"
+  }
+}

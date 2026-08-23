@@ -1,0 +1,18 @@
+interface:
+  display_name: pixel perfect ui
+  short_description: 'High-fidelity screenshot-to-code replication and visual repair
+    skill for web, WeChat Mini Program, Flutter, React Native, and native UI. Use
+    when the user asks to reproduce, clone, match, restore, audit, or visually align
+    an implementation to one or more reference screenshots. Operates as a measured
+    visual optimization loop: lock the reference environment, infer a visual specification,
+    implement, render deterministically, compare globally and regionally, diagnose
+    the highest-impact mismatch, patch minimally, and repeat until convergence.'
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true

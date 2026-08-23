@@ -1,0 +1,4 @@
+Pillow>=10
+numpy>=1.26
+# Optional for SSIM:
+# scikit-image>=0.22

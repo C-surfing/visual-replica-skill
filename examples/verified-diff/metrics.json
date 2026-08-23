@@ -1,0 +1,159 @@
+{
+  "status": "OK",
+  "acceptance_allowed": true,
+  "reference_size": [
+    390,
+    844
+  ],
+  "candidate_size_original": [
+    390,
+    844
+  ],
+  "resized_for_diagnostic": false,
+  "pixel_threshold": 16,
+  "global": {
+    "changed_pixel_ratio": 0.04472596913355207,
+    "mae_normalized": 0.015735598281025887,
+    "pixel_similarity": 0.9842644017189741,
+    "edge_similarity": 0.9785710573196411,
+    "edge_weighted_similarity": 0.983785592019558,
+    "ssim": 0.9153440729270526,
+    "image_composite": 0.968628689730965
+  },
+  "multiscale": [
+    {
+      "scale": 0.25,
+      "size": [
+        98,
+        211
+      ],
+      "metrics": {
+        "changed_pixel_ratio": 0.05701711964406616,
+        "mae_normalized": 0.015151464380323887,
+        "pixel_similarity": 0.9848485356196761,
+        "edge_similarity": 0.9416149854660034,
+        "edge_weighted_similarity": 0.9563193209469318,
+        "ssim": 0.8246783936621781,
+        "image_composite": 0.9312856777802514
+      }
+    },
+    {
+      "scale": 0.5,
+      "size": [
+        195,
+        422
+      ],
+      "metrics": {
+        "changed_pixel_ratio": 0.04080690241827683,
+        "mae_normalized": 0.016681892797350883,
+        "pixel_similarity": 0.9833181072026491,
+        "edge_similarity": 0.9704998135566711,
+        "edge_weighted_similarity": 0.9724083878099918,
+        "ssim": 0.8692859001775645,
+        "image_composite": 0.9533932618860417
+      }
+    },
+    {
+      "scale": 1.0,
+      "size": [
+        390,
+        844
+      ],
+      "metrics": {
+        "changed_pixel_ratio": 0.04472596913355207,
+        "mae_normalized": 0.015735598281025887,
+        "pixel_similarity": 0.9842644017189741,
+        "edge_similarity": 0.9785710573196411,
+        "edge_weighted_similarity": 0.983785592019558,
+        "ssim": 0.9153440729270526,
+        "image_composite": 0.968628689730965
+      }
+    }
+  ],
+  "translation_to_align_candidate_to_reference_px": {
+    "dx": -4.0,
+    "dy": -6.0,
+    "confidence_peak": 1.0000001192092896
+  },
+  "hotspots": [
+    {
+      "x": 208,
+      "y": 120,
+      "width": 168,
+      "height": 188,
+      "area_ratio": 0.0959533357637623,
+      "mean_error": 0.4023960828781128,
+      "impact": 0.03861124645042628
+    },
+    {
+      "x": 20,
+      "y": 120,
+      "width": 168,
+      "height": 188,
+      "area_ratio": 0.0959533357637623,
+      "mean_error": 0.3623603582382202,
+      "impact": 0.03476968512150914
+    },
+    {
+      "x": 20,
+      "y": 760,
+      "width": 356,
+      "height": 68,
+      "area_ratio": 0.07354478065378539,
+      "mean_error": 0.08546435832977295,
+      "impact": 0.006285457487079668
+    }
+  ],
+  "regions": [
+    {
+      "name": "cards",
+      "weight": 2.0,
+      "critical": true,
+      "box": {
+        "x": 0,
+        "y": 100,
+        "width": 390,
+        "height": 230
+      },
+      "metrics": {
+        "changed_pixel_ratio": 0.10336677814938684,
+        "mae_normalized": 0.05253380909562111,
+        "pixel_similarity": 0.9474661909043789,
+        "edge_similarity": 0.9400996565818787,
+        "edge_weighted_similarity": 0.9541290998458862,
+        "ssim": 0.7850455823881213,
+        "image_composite": 0.9147709815868296
+      }
+    },
+    {
+      "name": "bottom-nav",
+      "weight": 1.0,
+      "critical": true,
+      "box": {
+        "x": 0,
+        "y": 740,
+        "width": 390,
+        "height": 104
+      },
+      "metrics": {
+        "changed_pixel_ratio": 0.1343688362919132,
+        "mae_normalized": 0.011519897729158401,
+        "pixel_similarity": 0.9884801022708416,
+        "edge_similarity": 0.9585678577423096,
+        "edge_weighted_similarity": 0.9876899495720863,
+        "ssim": 0.7674298230401102,
+        "image_composite": 0.9350593272565091
+      }
+    }
+  ],
+  "regional_composite": 0.9215337634767228,
+  "diagnostic_hints": [
+    "Meaningful global translation detected: inspect viewport/safe-area/shell/header before child offsets.",
+    "Largest mismatch hotspot covers a substantial area: prioritize its root container before micro-polish."
+  ],
+  "notes": [
+    "image_composite is a progress signal, not proof of perceptual identity",
+    "cross-OS/font/browser comparisons may contain irreducible rasterization noise",
+    "translation estimate is diagnostic; never shift the screenshot post-capture for acceptance"
+  ]
+}
