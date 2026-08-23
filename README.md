@@ -1,79 +1,161 @@
-# pixel-perfect-ui v2
+<div align="center">
 
-A portable Agent Skill for high-fidelity screenshot-to-code replication.
+# 🎯 Pixel Perfect UI
 
-The key difference from a normal “copy this screenshot” prompt is a measured optimization loop:
+**High-fidelity screenshot-to-code replication — as a measured optimization loop.**
 
-```text
-reference → visual model → code → deterministic render
-         → multi-scale + region + hotspot comparison
-         → root-cause diagnosis → minimal patch → repeat
+Reproduce the reference, not an interpretation of it.
+
+![Agent Skill](https://img.shields.io/badge/Agent%20Skill-pixel--perfect--ui-8B5CF6?style=for-the-badge&logo=robot)
+![Version](https://img.shields.io/badge/version-v2.0-6f42c1?style=for-the-badge)
+![License](https://img.shields.io/github/license/C-surfing/pixel-perfect-ui?style=for-the-badge)
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Playwright](https://img.shields.io/badge/Playwright-1.50%2B-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)
+![Platforms](https://img.shields.io/badge/Web%20·%20WeChat%20Mini%20Program%20·%20Flutter%20·%20React%20Native%20·%20Native-0ea5e9?style=for-the-badge)
+![Stars](https://img.shields.io/github/stars/C-surfing/pixel-perfect-ui?style=for-the-badge&logo=github)
+
+*An installable Agent Skill for Claude Code, Codex, Cursor & any agent that can run Python scripts.*
+
+</div>
+
+---
+
+## What it is
+
+Most "copy this screenshot" prompts produce something that *looks* right — once. `pixel-perfect-ui` treats UI replication as **constrained optimization**: the reference screenshot is the visual source of truth, the running implementation is the thing being judged, and **source code alone is never evidence of visual fidelity**.
+
+Every iteration is measured, localized, and repeatable:
+
+```mermaid
+flowchart LR
+    A["Reference<br/>Screenshot"] --> B["Visual Model<br/>(palette · edges · layout)"]
+    B --> C["Implementation<br/>(any framework)"]
+    C --> D["Deterministic Render<br/>(Playwright @ fixed viewport)"]
+    D --> E["Multi-scale + Regional<br/>Comparison"]
+    E --> F{"Root-cause<br/>Diagnosis"}
+    F -->|"mismatch found"| G["Smallest useful patch"]
+    G --> D
+    F -->|"converged"| H["✅ Verified replica"]
+    style H fill:#d1fae5,stroke:#059669
 ```
 
-## What's new in v2
+## ✨ v2 highlights
 
-- multi-scale comparison for macro → component → detail errors
-- edge-weighted error to avoid blank-background score inflation
-- global translation estimation
-- automatic diff hotspot clustering and annotated hotspot image
-- reference analyzer for palette + edge/anchor evidence
-- regional/critical-area scoring
-- iteration ledger helper and rollback discipline
-- richer diagnostic playbook
-- multiple-reference/state rules
-- stronger anti-hack acceptance rules
-- web / WeChat Mini Program / native adapter guidance
+- **Multi-scale comparison** — catches macro layout, component, *and* sub-pixel detail errors at 4× / 2× / 1× scales
+- **Edge-weighted similarity** — blank-background regions can't inflate your score
+- **Global translation estimation** — tells you the shell/viewport shifted *before* you debug child offsets
+- **Automatic hotspot clustering** — annotated `hotspots.png` pinpoints exactly where the biggest mismatch lives
+- **Critical-region scoring** — weight the parts that matter (`cards`, `bottom-nav`, …) via `regions.json`
+- **Reference analyzer** — palette + edge/anchor evidence extracted *before* you write a line of code
+- **Iteration ledger + rollback discipline** — never chase a regression blind
+- **Anti-hack acceptance rules** — resizing screenshots post-capture to fake a score is rejected
+- **Platform adapters** — web, WeChat Mini Program, Flutter, React Native, native
 
-## Install
+## 🔬 See it in action
 
-Copy the folder into a supported skill location, for example:
+Synthetic example shipped in this repo (390×844 mobile viewport) — reference vs. first-pass candidate:
+
+| Reference | Candidate |
+| :---: | :---: |
+| <img src="examples/synthetic-reference.png" width="140"/> | <img src="examples/synthetic-candidate.png" width="140"/> |
+
+The comparison step doesn't just give a number — it *shows* the mismatch:
+
+| Diff | Amplified diff | Edge diff | Hotspots |
+| :---: | :---: | :---: | :---: |
+| <img src="examples/verified-diff/diff.png" width="140"/> | <img src="examples/verified-diff/diff-amplified.png" width="140"/> | <img src="examples/verified-diff/edge-diff.png" width="140"/> | <img src="examples/verified-diff/hotspots.png" width="140"/> |
+
+Sample real output from `examples/verified-diff/metrics.json`:
+
+| Metric | Value |
+| :--- | :--- |
+| Pixel similarity (global) | 0.984 |
+| Edge-weighted similarity | 0.984 |
+| SSIM | 0.915 |
+| Composite progress signal | 0.969 |
+| Detected hotspots | 3 (auto-clustered, impact-ranked) |
+| Diagnostic hint | *"Meaningful global translation detected: inspect viewport/safe-area/shell/header before child offsets."* (dx=−4, dy=−6 px) |
+
+> `image_composite` is a **progress signal, not proof of perceptual identity** — the skill's philosophy is: make fidelity measurable, localizable, repeatable, and hard to fake.
+
+## 🚀 Quick start
+
+### 1. Install the skill
+
+Copy the folder into any supported skill location:
 
 ```text
-.cursor/skills/pixel-perfect-ui/
-.agents/skills/pixel-perfect-ui/
 .claude/skills/pixel-perfect-ui/
 .codex/skills/pixel-perfect-ui/
+.cursor/skills/pixel-perfect-ui/
+.agents/skills/pixel-perfect-ui/
 ```
 
-## Optional tools
+### 2. Install optional tooling
 
 ```bash
 npm install
 npx playwright install chromium
-pip install -r requirements.txt
+pip install -r requirements.txt        # Pillow, numpy
+pip install scikit-image                # optional: SSIM
 ```
 
-Optional SSIM:
+### 3. Run the loop
 
 ```bash
-pip install scikit-image
-```
-
-## Typical workflow
-
-```bash
-python scripts/init_workspace.py --root .
-```
-
-
-```bash
+# Analyze the reference first (palette, edges, anchors)
 python scripts/analyze_reference.py reference.png --out-dir .ui-replica/analysis
-node scripts/capture.mjs --url http://localhost:3000/menu --width 390 --height 844 --out .ui-replica/candidate/candidate.png
-python scripts/compare.py reference.png .ui-replica/candidate/candidate.png --out-dir .ui-replica/diff
-```
 
-For critical regions:
+# Render the implementation deterministically
+node scripts/capture.mjs --url http://localhost:3000/menu --width 390 --height 844 \
+  --out .ui-replica/candidate/candidate.png
 
-```bash
-python scripts/compare.py reference.png candidate.png --regions-json regions.json --out-dir .ui-replica/diff
-```
+# Compare — globally, regionally, multi-scale, with hotspot maps
+python scripts/compare.py reference.png .ui-replica/candidate/candidate.png \
+  --out-dir .ui-replica/diff
 
-## Philosophy
+# Critical regions get extra weight
+python scripts/compare.py reference.png candidate.png \
+  --regions-json examples/regions.json --out-dir .ui-replica/diff
 
-The skill does not promise a universal 99% score. It makes fidelity measurable, localizable, repeatable, and hard to fake.
-
-For multiple targets, fill `.ui-replica/replica-config.json` and run:
-
-```bash
+# Or evaluate a whole target list in one shot
 python scripts/evaluate_targets.py --config .ui-replica/replica-config.json
 ```
+
+## 📦 Repository structure
+
+```text
+pixel-perfect-ui/
+├── SKILL.md                    # The skill itself (agent-facing instructions)
+├── agents/openai.yaml          # Agent descriptor
+├── scripts/                    # Python + Node tooling
+│   ├── analyze_reference.py    #   palette / edge / anchor evidence
+│   ├── capture.mjs             #   Playwright deterministic render
+│   ├── compare.py              #   multi-scale + regional + hotspot diff
+│   ├── evaluate_targets.py     #   multi-target aggregator
+│   ├── init_workspace.py       #   .ui-replica workspace scaffold
+│   └── ledger.py               #   iteration ledger helper
+├── references/                 # 10 playbooks: diagnostics, anti-patterns,
+│                               #   fidelity model, platform adapters, …
+├── templates/                  # spec / config / ledger / stabilize.css
+├── examples/                   # synthetic reference + verified diff artifacts
+└── CHANGELOG.md
+```
+
+## 🧭 Supported targets
+
+| Platform | Notes |
+| :--- | :--- |
+| Web | Playwright capture, CSS pixel-perfect |
+| WeChat Mini Program | WXML/WXSS mapping, safe-area aware |
+| Flutter | Render to PNG at fixed logical size |
+| React Native | Device-pixel-ratio handling |
+| Native (iOS/Android) | Simulator/emulator capture, screen-density adapters |
+
+## 📜 License
+
+[MIT](LICENSE) © 2026 [C-surfing](https://github.com/C-surfing)
+
+---
+
+<p align="center">Made with a measured loop, not a screenshot of hope. 🎯</p>
