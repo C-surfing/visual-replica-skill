@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🧬 Visual Replica Skill Pro
+# 🧬 Visual Replica Skill
 
 **A disciplined Agent Skill + deterministic visual QA toolkit for high-fidelity screenshot-driven UI reconstruction.**
 
@@ -8,11 +8,11 @@ Make AI behave like a **senior visual frontend engineer** — reproduce the targ
 
 ![Agent Skill](https://img.shields.io/badge/Agent%20Skill%20+%20Toolkit-8B5CF6?style=for-the-badge&logo=robot)
 ![Version](https://img.shields.io/badge/version-0.12.0-6f42c1?style=for-the-badge)
-![License](https://img.shields.io/github/license/C-surfing/visual-replica-skill-pro?style=for-the-badge)
+![License](https://img.shields.io/github/license/C-surfing/visual-replica-skill?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![CI](https://img.shields.io/github/actions/workflow/status/C-surfing/visual-replica-skill-pro/ci.yml?style=for-the-badge&logo=githubactions&logoColor=white)
+![CI](https://img.shields.io/github/actions/workflow/status/C-surfing/visual-replica-skill/ci.yml?style=for-the-badge&logo=githubactions&logoColor=white)
 ![Tests](https://img.shields.io/badge/pytest-passing-22c55e?style=for-the-badge&logo=pytest&logoColor=white)
-![Stars](https://img.shields.io/github/stars/C-surfing/visual-replica-skill-pro?style=for-the-badge&logo=github)
+![Stars](https://img.shields.io/github/stars/C-surfing/visual-replica-skill?style=for-the-badge&logo=github)
 
 *For Cursor · Claude Code · Codex · and any coding agent that can run Python.*
 
@@ -92,7 +92,7 @@ visual-replica capture http://localhost:3000 --width 390 --height 844 --out cand
 ## 📦 Structure
 
 ```text
-visual-replica-skill-pro/
+visual-replica-skill/
 ├── SKILL.md                    # expert workflow + guardrails
 ├── visual_replica/             # Python toolkit (11 modules)
 │   ├── cli.py                  #   unified CLI entry

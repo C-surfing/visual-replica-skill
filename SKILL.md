@@ -1,9 +1,9 @@
 ---
-name: visual-replica-skill-pro
+name: visual-replica-skill
 description: High-fidelity UI reconstruction skill plus executable visual QA toolkit. Use when recreating or matching an interface from screenshots/design references, auditing visual fidelity, or iterating toward a reference through deterministic rendering and measured comparison.
 ---
 
-# Visual Replica Skill Pro
+# Visual Replica Skill
 
 ## Position
 

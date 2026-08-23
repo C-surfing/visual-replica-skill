@@ -16,5 +16,5 @@
 This repository evolved through three generations:
 
 - **v1/v2 — pixel-perfect-ui (toolchain edition):** multi-scale comparison, edge-weighted similarity, hotspot clustering, reference analyzer, quantitative `compare.py` pipeline with example artifacts. Recoverable from git history (commit `448adb5` and earlier).
-- **v3 — Visual Replica Skill Pro (methodology edition):** pure expert-workflow skill — task planning, classified visual diagnosis, implementation ordering, iteration learning, quality gates. Recoverable from git history (commit `dba6703`).
+- **v3 — Visual Replica Skill (methodology edition):** pure expert-workflow skill — task planning, classified visual diagnosis, implementation ordering, iteration learning, quality gates. Recoverable from git history (commit `dba6703`).
 - **v0.12.0 — Engineering Quality (current):** the methodology merged with a real, tested Python toolkit (`visual_replica/`) under a unified CLI, shipped with pytest suite and CI.
