@@ -58,6 +58,14 @@ def test_real_browser_state_and_dom_evidence(tmp_path):
         assert all(x["passed"] for x in evidence["assertions"])
         assert evidence["dom"][0]["bounds"]["width"] > 0
         assert (tmp_path / "verification" / "menu-open" / "screenshot.png").is_file()
+        # Exercise the complete browser + image-comparison path using an approved local baseline.
+        shutil.copyfile(result["scenarios"][0]["screenshot_path"], tmp_path / "baseline.png")
+        doc["checks"]["scenarios"][0]["reference"] = "baseline.png"
+        doc["checks"]["scenarios"][0]["min_fidelity"] = 0.99
+        spec.write_text(yaml.safe_dump(doc), encoding="utf-8")
+        accepted = verify_contract(spec, tmp_path / "verification-with-baseline")
+        assert accepted["status"] == "PASS", accepted["scenarios"][0]
+        assert accepted["scenarios"][0]["visual"]["fidelity"] >= 0.99
     finally:
         server.shutdown()
         server.server_close()
