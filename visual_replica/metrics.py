@@ -175,7 +175,7 @@ def save_diff_artifacts(reference: Image.Image, candidate: Image.Image, out_dir:
     Image.blend(reference, candidate, 0.5).save(overlay_path)
     _, _, _, xor = edge_metrics(reference, candidate)
     edge_path = out_dir / "edge-diff.png"
-    Image.fromarray((xor.astype(np.uint8) * 255)).save(edge_path)
+    Image.fromarray(xor.astype(np.uint8) * 255).save(edge_path)
     return {
         "diff": str(diff_path),
         "diff_amplified": str(amp_path),
