@@ -1,4 +1,5 @@
 from PIL import Image, ImageDraw
+
 from visual_replica.analyze import analyze_reference
 
 

@@ -28,7 +28,7 @@ def _repo_candidates(repo: str|None, keywords: list[str], limit=20):
             try:
                 txt=p.read_text(encoding="utf-8",errors="ignore").lower()
                 score+=sum(1 for k in keywords if k and k.lower() in txt)
-            except Exception:pass
+            except (OSError, UnicodeError):continue
         if score:scored.append((score,rel))
     scored.sort(key=lambda x:(-x[0],x[1]))
     return [{"file":rel,"score":score} for score,rel in scored[:limit]]

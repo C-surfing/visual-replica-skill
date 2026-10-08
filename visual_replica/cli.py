@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-import argparse, json, subprocess, sys
+import argparse
+import json
+import subprocess
+import sys
 from pathlib import Path
 
 from .analyze import analyze_reference
@@ -9,9 +12,9 @@ from .compare import compare_images
 from .diagnose import diagnose_file
 from .doctor import doctor
 from .intent import ContractError, init_contract, load_contract
-from .verify import verify_contract
 from .report import generate_report
 from .utils import write_json
+from .verify import verify_contract
 
 
 def _print(data):print(json.dumps(data,indent=2,ensure_ascii=False,default=str))

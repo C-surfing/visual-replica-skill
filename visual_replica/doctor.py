@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-import importlib.util, shutil
+import importlib.util
+import shutil
 
 
 def doctor():

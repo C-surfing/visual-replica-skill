@@ -14,7 +14,7 @@ def detect_hotspots(reference: Image.Image, candidate: Image.Image, threshold: i
     mask = (magnitude > threshold).astype(np.uint8) * 255
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=1)
-    n, labels, stats, _ = cv2.connectedComponentsWithStats(mask, connectivity=8)
+    n, _, stats, _ = cv2.connectedComponentsWithStats(mask, connectivity=8)
     items = []
     for idx in range(1, n):
         x, y, w, h, area = map(int, stats[idx])

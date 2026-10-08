@@ -27,7 +27,7 @@ def dominant_colors(img: Image.Image, k: int = 8, max_samples: int = 40000) -> l
     out = []
     for i in order:
         color = [int(v) for v in rgb_centers[i]]
-        out.append({"rgb": color, "hex": "#%02x%02x%02x" % tuple(color), "fraction": float(counts[i]/total)})
+        out.append({"rgb": color, "hex": f"#{color[0]:02x}{color[1]:02x}{color[2]:02x}", "fraction": float(counts[i]/total)})
     return out
 
 
@@ -61,7 +61,7 @@ def _ocr_tesseract(img: Image.Image):
         text = text.strip()
         conf_raw = data["conf"][i]
         try: conf = float(conf_raw)
-        except Exception: conf = -1
+        except (TypeError, ValueError): conf = -1
         if not text or conf < 0:
             continue
         out.append({"text": text, "confidence": conf/100.0, "bbox": [int(data["left"][i]), int(data["top"][i]), int(data["width"][i]), int(data["height"][i])]})
@@ -97,13 +97,13 @@ def run_ocr(image_path: str | Path, backend: str = "auto") -> dict[str, Any]:
     if backend in ("auto", "paddle"):
         try:
             return {"backend": "paddle", "available": True, "items": _ocr_paddle(image_path)}
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - optional OCR backend may raise third-party errors
             errors.append(f"paddle: {exc}")
             if backend == "paddle": return {"backend": "paddle", "available": False, "reason": str(exc), "items": []}
     if backend in ("auto", "tesseract"):
         try:
             return {"backend": "tesseract", "available": True, "items": _ocr_tesseract(load_rgb(image_path))}
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - optional OCR backend may raise third-party errors
             errors.append(f"tesseract: {exc}")
             if backend == "tesseract": return {"backend": "tesseract", "available": False, "reason": str(exc), "items": []}
     return {"backend": "none", "available": False, "reason": "; ".join(errors) or "no OCR backend", "items": []}

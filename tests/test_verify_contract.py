@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 
-from PIL import Image
 import yaml
+from PIL import Image
 
 from visual_replica.utils import write_json
 from visual_replica.verify import verify_contract
@@ -46,11 +46,11 @@ def comparator(reference, candidate, output, **kwargs):
     return {"status": "OK", "overall_fidelity": 0.96}
 
 
-def run(tmp_path, doc, fake=runner()):
+def run(tmp_path, doc, fake=None):
     spec = tmp_path / "intent.yaml"
     spec.write_text(yaml.safe_dump(doc), encoding="utf-8")
     Image.new("RGB", (320, 240), "white").save(tmp_path / "reference.png")
-    return verify_contract(spec, tmp_path / "results", runner=fake, comparator=comparator)
+    return verify_contract(spec, tmp_path / "results", runner=fake or runner(), comparator=comparator)
 
 
 def test_all_explicit_checks_pass(tmp_path):

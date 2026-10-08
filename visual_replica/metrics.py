@@ -42,8 +42,8 @@ def ssim_score(reference: Image.Image, candidate: Image.Image) -> float:
 
 
 def _resize(img: Image.Image, scale: float) -> Image.Image:
-    w = max(8, int(round(img.width * scale)))
-    h = max(8, int(round(img.height * scale)))
+    w = max(8, round(img.width * scale))
+    h = max(8, round(img.height * scale))
     return img.resize((w, h), Image.Resampling.LANCZOS)
 
 
@@ -71,7 +71,7 @@ def native_ms_ssim(reference: Image.Image, candidate: Image.Image, device: str =
     try:
         import torch
         from pytorch_msssim import ms_ssim
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - optional metric backend may raise third-party errors
         return {"available": False, "reason": f"optional dependency unavailable: {exc}"}
     require_same_size(reference, candidate)
     a = torch.from_numpy(pil_to_rgb_array(reference)).permute(2, 0, 1).unsqueeze(0).float().to(device)
@@ -81,7 +81,7 @@ def native_ms_ssim(reference: Image.Image, candidate: Image.Image, device: str =
         with torch.no_grad():
             value = ms_ssim(a, b, data_range=255, size_average=True)
         return {"available": True, "score": float(value.detach().cpu()), "backend": "pytorch-msssim"}
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - optional metric backend may raise third-party errors
         return {"available": False, "reason": f"native MS-SSIM failed: {exc}", "backend": "pytorch-msssim"}
 
 
@@ -95,9 +95,9 @@ def _lpips_model(net: str):
 
 def lpips_distance(reference: Image.Image, candidate: Image.Image, net: str = "alex", device: str = "cpu") -> dict[str, Any]:
     try:
-        import torch
         import lpips  # noqa: F401
-    except Exception as exc:
+        import torch
+    except Exception as exc:  # noqa: BLE001 - optional metric backend may raise third-party errors
         return {"available": False, "reason": f"optional dependency unavailable: {exc}"}
     require_same_size(reference, candidate)
     try:
@@ -108,7 +108,7 @@ def lpips_distance(reference: Image.Image, candidate: Image.Image, net: str = "a
         with torch.no_grad():
             d = model(tensor(reference), tensor(candidate))
         return {"available": True, "distance": float(d.detach().cpu().reshape(-1)[0]), "net": net}
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - optional metric backend may raise third-party errors
         return {"available": False, "reason": f"LPIPS failed: {exc}", "net": net}
 
 
@@ -132,7 +132,7 @@ def edge_metrics(reference: Image.Image, candidate: Image.Image, low: int = 80, 
     recall = float(np.logical_and(ea, eb_d).sum() / ref_count) if ref_count else 1.0
     precision = float(np.logical_and(eb, ea_d).sum() / cand_count) if cand_count else 1.0
     f1 = float(2 * precision * recall / (precision + recall)) if precision + recall else 0.0
-    return ({"edge_iou": iou, "edge_precision_tolerant": precision, "edge_recall_tolerant": recall, "edge_f1_tolerant": f1, "edge_diff_ratio": diff_ratio, "edge_similarity": f1}, ea, eb, xor)
+    return {"edge_iou": iou, "edge_precision_tolerant": precision, "edge_recall_tolerant": recall, "edge_f1_tolerant": f1, "edge_diff_ratio": diff_ratio, "edge_similarity": f1}, ea, eb, xor
 
 
 def estimate_translation(reference: Image.Image, candidate: Image.Image) -> dict[str, float]:

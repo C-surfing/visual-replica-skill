@@ -117,7 +117,7 @@ def validate_contract(data: Any) -> dict[str, Any]:
             raise ContractError(f"{loc}.id must be unique and use letters, digits, _ or -")
         seen.add(name)
         url = _string(s.get("url"), f"{loc}.url")
-        if not (url.startswith("http://") or url.startswith("https://")):
+        if not (url.startswith(("http://", "https://"))):
             raise ContractError(f"{loc}.url must be http(s)")
         viewport = _object(s.get("viewport"), f"{loc}.viewport")
         for field in ("width", "height"):
