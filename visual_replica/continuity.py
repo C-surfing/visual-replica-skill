@@ -50,7 +50,7 @@ def render_brief(contract: dict[str, Any], lang: str = "zh") -> str:
             lines += ["## 最近一轮反馈", "",
                       f"- 你的反馈：{last['user_feedback']}",
                       f"- 调整方向：{last['agreed_change']}",
-                      f"- 当前约定：{'已确认' if last['status'] == 'confirmed' else '尚待确认'}", ""]
+                      f"- 当前约定：{ {'confirmed': '已确认', 'proposed': '尚待确认', 'rejected': '未采纳'}[last['status']] }", ""]
         lines += ["## 还需要你决定的", "", _lines(questions, "没有明确待确认事项"), ""]
         return "\n".join(lines).strip() + "\n"
 
@@ -104,25 +104,69 @@ def guard_confirmed_decisions(before: dict[str, Any], after: dict[str, Any]) -> 
                 flag(f"{item.get('id', item['text'])}.{field}", item.get(field), existing.get(field))
 
     if before.get("source", {}).get("approved") is True:
-        for field in ("direction", "references"):
-            flag(field, before.get(field), after.get(field))
-        flag("avoid", before.get("intent", {}).get("avoid", []), after.get("intent", {}).get("avoid", []))
+        old_direction = before.get("direction", {})
+        new_direction = after.get("direction", {})
+        names = {
+            "product": "正在设计的产品",
+            "audience": "想服务的人",
+            "desired_feeling": "想要的氛围",
+            "primary_action": "最重要的操作",
+            "success_looks_like": "成功的体验",
+        }
+        for key in set(old_direction) | set(new_direction):
+            flag(names.get(key, key), old_direction.get(key), new_direction.get(key))
+
+        old_refs = {ref["id"]: ref for ref in before.get("references", [])}
+        new_refs = {ref["id"]: ref for ref in after.get("references", [])}
+        for key in sorted(set(old_refs) | set(new_refs)):
+            old_ref = old_refs.get(key)
+            new_ref = new_refs.get(key)
+            if old_ref is None or new_ref is None:
+                flag(f"参考「{key}」", old_ref, new_ref)
+                continue
+            for field, label in [
+                ("source", "来源"), ("borrow", "借鉴的部分"),
+                ("not_copy", "不照搬的部分"), ("why", "选择原因"),
+            ]:
+                flag(f"参考「{key}」的{label}", old_ref[field], new_ref[field])
+        flag("不希望出现的内容", before.get("intent", {}).get("avoid", []),
+             after.get("intent", {}).get("avoid", []))
         if after.get("source", {}).get("approved") is not True:
-            flag("source approval", True, after.get("source", {}).get("approved"))
+            flag("整体设计是否已确认", True, after.get("source", {}).get("approved"))
     return {"status": "REVIEW_REQUIRED" if changes else "UNCHANGED_CONFIRMED",
             "changes": changes}
+
+
+def _display_change(value: Any, lang: str) -> str:
+    if value is None:
+        return "没有" if lang == "zh" else "none"
+    if isinstance(value, dict):
+        if "text" in value:
+            return str(value["text"])
+        if "borrow" in value:
+            return f"{value['source']}（借鉴：{value['borrow']}）"
+        return "、".join(f"{key}：{item}" for key, item in value.items())
+    if isinstance(value, list):
+        return "、".join(_display_change(item, lang) for item in value) or (
+            "没有" if lang == "zh" else "none"
+        )
+    return str(value)
 
 
 def render_guard(result: dict[str, Any], lang: str = "zh") -> str:
     if not result["changes"]:
         return "已确认的设计选择没有被改动。\n" if lang == "zh" else "Confirmed design choices are unchanged.\n"
     if lang == "zh":
-        lines = ["这些已确认的设计选择发生了变化，需要你重新决定：", ""]
+        lines = ["以下设计选择与你之前确认的不一样，需要你决定是否更改：", ""]
         for item in result["changes"]:
-            lines.append(f"- {item['what']}：原来是「{item['before']}」，现在变成「{item['after']}」。")
-        lines.append("\n在确认前，不应悄悄用新版本替换原来的约定。")
+            before = _display_change(item["before"], lang)
+            after = _display_change(item["after"], lang)
+            lines.append(f"- {item['what']}：之前「{before}」，现在「{after}」。")
+        lines.append("\n在你确认前，我会保留原来的设计方向。")
         return "\n".join(lines) + "\n"
-    lines = ["Previously approved choices changed; your review is needed:", ""]
+    lines = ["These decisions differ from the agreed design and need your input:", ""]
     for item in result["changes"]:
-        lines.append(f"- {item['what']}: before={item['before']!r}; proposed={item['after']!r}")
+        before = _display_change(item["before"], lang)
+        after = _display_change(item["after"], lang)
+        lines.append(f"- {item['what']}: previously '{before}', now '{after}'.")
     return "\n".join(lines) + "\n"
