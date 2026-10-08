@@ -10,6 +10,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - run: pip install -e '.[dev]'
+      - run: npm install --no-package-lock
+      - run: npx playwright install --with-deps chromium
       - run: pytest
       - run: ruff check visual_replica tests
+      - run: node --check visual_replica/assets/verify.mjs

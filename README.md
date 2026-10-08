@@ -1,124 +1,138 @@
-<div align="center">
+# Visual Replica
 
-# 🧬 Visual Replica Skill
+**Preserve design intent. Verify the actual interface.**
 
-**A disciplined Agent Skill + deterministic visual QA toolkit for high-fidelity screenshot-driven UI reconstruction.**
+Visual Replica is a model-independent **Agent Skill + executable evidence toolkit**. It helps coding agents reproduce approved screenshots, preserve decisions while moving from prototype to production code, and detect regressions without confusing pixel similarity with usability or design quality.
 
-Make AI behave like a **senior visual frontend engineer** — reproduce the target, not an interpretation of it.
+It is **not** a UI generator, Figma clone, design system, aesthetic prompt library, or autonomous code editor. Use oil-ui, Impeccable, OpenDesign, Figma and your preferred coding agent for those roles. Visual Replica specializes in evidence and declared acceptance boundaries.
 
-![Agent Skill](https://img.shields.io/badge/Agent%20Skill%20+%20Toolkit-8B5CF6?style=for-the-badge&logo=robot)
-![Version](https://img.shields.io/badge/version-0.12.0-6f42c1?style=for-the-badge)
-![License](https://img.shields.io/github/license/C-surfing/visual-replica-skill?style=for-the-badge)
-![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![CI](https://img.shields.io/github/actions/workflow/status/C-surfing/visual-replica-skill/ci.yml?style=for-the-badge&logo=githubactions&logoColor=white)
-![Tests](https://img.shields.io/badge/pytest-passing-22c55e?style=for-the-badge&logo=pytest&logoColor=white)
-![Stars](https://img.shields.io/github/stars/C-surfing/visual-replica-skill?style=for-the-badge&logo=github)
+## Three workflows
 
-*For Cursor · Claude Code · Codex · and any coding agent that can run Python.*
+| Mode | Input | What it verifies |
+| --- | --- | --- |
+| **Replica** | Approved screenshots | Rendered fidelity at known viewports/states |
+| **Transfer** | HTML/Figma prototype and declared decisions | Visual references, browser state assertions, decision retention |
+| **Preservation** | Existing application and design constraints | Changed states, behavior assertions and any supplied baselines |
 
-</div>
+**Important:** A screenshot is evidence of appearance, not proof of product quality. Qualitative "preserve" and "avoid" requirements always require a human review. Inferred decisions are not automatically user-confirmed.
 
----
+## Quick start
 
-## 🎯 What it is
+For the Python toolkit (Python 3.10+):
 
-Not another autonomous UI agent. The **coding agent edits code**; Visual Replica supplies a **disciplined workflow and visual evidence**:
+~~~bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+~~~
 
-- `SKILL.md` — expert workflow and guardrails for coding agents
-- `visual_replica/` — deterministic Python toolkit: analysis, comparison, diagnosis, reporting, benchmarking
-- `scripts/capture.mjs` — deterministic web capture via Playwright
-- `tests/` — synthetic tests that verify real measurements, not placeholders
+For browser-backed checks (Node.js and Chromium):
 
-> **Fundamental principle:** Reference image = visual specification. Rendered application = only reliable evidence. Never claim success from code inspection alone.
+~~~bash
+npm install
+npx playwright install chromium
+~~~
 
-## 🔁 The Loop
+Start with an editable, **unapproved** design intent contract:
 
-```mermaid
-flowchart TD
-    A["Reference Screenshot"] --> B["visual-replica analyze<br/>(palette · geometry · layout)"]
-    B --> C["Agent implements<br/>(SKILL.md workflow)"]
-    C --> D["visual-replica capture<br/>(Playwright, fixed viewport)"]
-    D --> E["visual-replica compare<br/>(SSIM · pixel · edge · phase-correlation<br/>multi-scale fallback · hotspots)"]
-    E --> F["visual-replica diagnose<br/>(root cause + file suggestions)"]
-    F --> G{"Accept?"}
-    G -->|no| H["Minimal fix → recapture"]
-    H --> D
-    G -->|yes| I["visual-replica report<br/>(HTML evidence)"]
-    style I fill:#d1fae5,stroke:#059669
-```
+~~~bash
+visual-replica intent init --out intent.yaml
+visual-replica intent validate --spec intent.yaml
+~~~
 
-## 🧰 Toolkit
+Edit its URLs, scenarios and assertions; add approved image references where available. Then run:
 
-Unified CLI: `visual-replica <command>`
+~~~bash
+visual-replica verify --spec intent.yaml --out-dir .visual-replica/verification
+~~~
 
-| Command | What it does |
-| :--- | :--- |
-| `doctor` | Environment self-check (deps, optional adapters) |
-| `analyze` | Reference analysis → palette, edges, layout evidence |
-| `compare` | Multi-metric diff: SSIM, pixel, edge, phase-correlation, multi-scale fallback, hotspot clustering, regional scoring |
-| `diagnose` | Root-cause classification **with repository file suggestions** |
-| `report` | Self-contained HTML report of comparison + diagnosis |
-| `capture` | Deterministic Playwright screenshot at fixed viewport |
-| `benchmark` | Manifest-driven benchmark runs |
+Open the local HTML report at `.visual-replica/verification/index.html`, or inspect `verification.json`. These outputs contain scenario screenshots, browser assertions, selected DOM bounds/computed style evidence, image comparison artifacts when references exist, and items still requiring human review.
 
-### Metrics depth
+### Exit/status semantics
 
-- **Core** (Pillow / NumPy / scikit-image / OpenCV): pixel, edge, SSIM, pyramid multi-scale SSIM, layout proposals, hotspots
-- **`[deep]` extra**: native MS-SSIM + LPIPS (PyTorch — LPIPS is a distance, *lower* = more similar, input normalized to `[-1, 1]`)
-- **`[ocr]` extra**: pytesseract adapter (or PaddleOCR via `--ocr paddle`) for text-region fidelity
+| Status | CLI exit | Meaning |
+| --- | --- | --- |
+| `PASS` | 0 | All **declared automated** checks pass, with no unresolved qualitative requirements |
+| `REVIEW_REQUIRED` | 1 | Visual baseline missing, threshold uncalibrated, or a qualitative design decision remains |
+| `FAIL` | 2 | An explicit browser assertion or calibrated visual threshold fails |
+| `ERROR` | 3 | Invalid contract or execution/environment problem |
 
-## 🚀 Quick start
+A passing result does **not** certify an entire UI as beautifully designed or accessible.
 
-```bash
-python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -e .                                    # optional: pip install -e '.[deep]' '.[ocr]'
+## Design Intent Contract v1
 
+The contract is *per task/surface*. It does not replace a project's `DESIGN.md` or product facts. A decision records its text, provenance (`user-confirmed`, `agent-inferred`, `tool-extracted`) and optionally whether it is critical. Confirmation is only valid when the source was explicitly approved. Automated checks are separate.
+
+~~~yaml
+version: 1
+mode: transfer
+source:
+  prototype: ./prototype/index.html
+  approved: true
+intent:
+  preserve:
+    - text: Primary call-to-action must remain dominant
+      provenance: user-confirmed
+      critical: true
+  avoid:
+    - Unnecessary decorative cards
+  allowed_changes:
+    - Mobile layout can rearrange
+checks:
+  scenarios:
+    - id: desktop
+      url: http://localhost:3000/
+      viewport: {width: 1440, height: 900, dpr: 1}
+      ready_selector: main
+      actions:
+        - {type: click, selector: "#menu-button"}
+      assertions:
+        - {selector: "#menu", condition: visible}
+      inspect_selectors: ["main", "#menu"]
+      # reference: ./reference/desktop-menu.png
+      # min_fidelity: 0.92 # Optional, calibrate for your app
+~~~
+
+Supported action types: `click`, `fill`, `press`, `check`, `uncheck`, `wait_for`. Assertion conditions: `visible`, `hidden`, `text_contains`. Each scenario has an independent viewport, state and evidence folder. Scenario references and optional region files are resolved relative to the contract.
+
+See [Contract and evidence model](references/intent-contract.md) for acceptance semantics and known limitations.
+
+## Existing screenshot-replication toolkit
+
+The existing deterministic tools remain available; none of the contract commands modifies application code:
+
+~~~bash
 visual-replica doctor
 visual-replica analyze reference.png --out .visual-replica/reference-analysis.json
+visual-replica capture http://localhost:3000 --width 390 --height 844 --out candidate.png
 visual-replica compare reference.png candidate.png --out-dir .visual-replica/compare
 visual-replica diagnose .visual-replica/compare/comparison.json --repo . --out .visual-replica/diagnosis.json
 visual-replica report --comparison .visual-replica/compare/comparison.json \
   --diagnosis .visual-replica/diagnosis.json --out-dir .visual-replica/report
-```
+visual-replica benchmark benchmarks/manifest.example.json
+~~~
 
-Browser capture:
+Comparison uses pixel/edge/SSIM/multi-scale metrics, hotspots and optional LPIPS. A score is not a universal percentage of "design quality"; region or whole-page acceptance thresholds should be calibrated per project. Root-cause suggestions are hypotheses, **not proven DOM-to-source mappings**.
 
-```bash
-npm install
-npx playwright install chromium
-visual-replica capture http://localhost:3000 --width 390 --height 844 --out candidate.png
-```
+## Integration philosophy
 
-## 📦 Structure
+- **Taste / direction:** humans with oil-ui, Mobbin and other inspiration sources.
+- **Prototype / design system:** Figma, OpenDesign or a simple working HTML prototype.
+- **Implementation:** Codex, Claude Code or another coding agent, retaining the product's architecture.
+- **Verification:** Visual Replica captures reproducible evidence; existing accessibility and testing tools handle their own domains.
 
-```text
-visual-replica-skill/
-├── SKILL.md                    # expert workflow + guardrails
-├── visual_replica/             # Python toolkit (11 modules)
-│   ├── cli.py                  #   unified CLI entry
-│   ├── analyze.py / compare.py / metrics.py / hotspots.py
-│   ├── diagnose.py / report.py #   root cause + HTML evidence
-│   └── benchmark.py / doctor.py / utils.py / assets/capture.mjs
-├── scripts/capture.mjs         # Playwright capture
-├── references/                 # diff-to-fix · fidelity-model · platform-guidelines
-│                               #   self-improvement · toolkit-contract
-├── templates/regions.json      # critical-region definitions
-├── benchmarks/manifest.example.json
-├── examples/synthetic/         # reference vs candidate demo
-├── tests/                      # pytest suite (metrics, analyze, report, pipeline)
-├── .github/workflows/ci.yml    # pytest + ruff on push/PR
-├── pyproject.toml · package.json · VALIDATION.md · CONTRIBUTING.md
-└── CHANGELOG.md
-```
+No mandatory online account, style library, editor UI or custom Figma parser. See [Integrations](references/integrations.md).
 
-## 🔬 Validation
+## Development and validation
 
-`VALIDATION.md` documents how the toolkit is verified. CI runs `pytest` and `ruff` on every push — the measurements are real, and regressions get caught.
+~~~bash
+pip install -e '.[dev]'
+pytest
+ruff check visual_replica tests
+~~~
 
-## 📜 License
+The test suite includes contract validation, pure orchestration tests and a real Playwright state/DOM smoke test. GitHub CI installs Chromium for that browser test. The older visual comparison tests remain. Synthetic success is not represented as production-world design acceptance.
 
-[MIT](LICENSE) © 2026 [C-surfing](https://github.com/C-surfing)
+See [VALIDATION.md](VALIDATION.md) for the historical v0.12.0 release record; current CI status is authoritative for subsequent changes.
 
----
-
-<p align="center">Evidence over vibes. Reproduce the reference, not an interpretation of it. 🎯</p>
+MIT licensed. Contributions are welcome; please preserve the boundary between design generation and evidence-based verification.
