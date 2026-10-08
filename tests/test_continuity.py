@@ -40,7 +40,7 @@ def test_creative_brief_needs_no_browser(tmp_path):
     assert result["scenarios"] == []
     narrative = (tmp_path / "output" / "design-update.zh.md").read_text(encoding="utf-8")
     assert "Reading tool" in narrative
-    assert "截图" in narrative
+    assert "没有需要自动检查的页面" in narrative
     assert "Which font?" in narrative
 
 
