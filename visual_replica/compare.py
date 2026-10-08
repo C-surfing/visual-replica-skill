@@ -6,8 +6,17 @@ from typing import Any
 from PIL import Image
 
 from .hotspots import detect_hotspots, render_hotspots
-from .metrics import (band_error_profile, edge_metrics, estimate_translation, lpips_distance,
-                      native_ms_ssim, pixel_metrics, pyramid_ms_ssim, save_diff_artifacts, ssim_score)
+from .metrics import (
+    band_error_profile,
+    edge_metrics,
+    estimate_translation,
+    lpips_distance,
+    native_ms_ssim,
+    pixel_metrics,
+    pyramid_ms_ssim,
+    save_diff_artifacts,
+    ssim_score,
+)
 from .utils import load_rgb, read_json, write_json
 
 

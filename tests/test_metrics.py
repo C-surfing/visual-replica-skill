@@ -1,5 +1,6 @@
 from PIL import Image, ImageDraw
-from visual_replica.metrics import pixel_metrics, ssim_score, pyramid_ms_ssim, edge_metrics, estimate_translation
+
+from visual_replica.metrics import edge_metrics, estimate_translation, pixel_metrics, pyramid_ms_ssim, ssim_score
 
 
 def sample(shift=(0,0)):

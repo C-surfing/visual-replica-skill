@@ -1,4 +1,5 @@
 from PIL import Image, ImageDraw
+
 from visual_replica.compare import compare_images
 from visual_replica.diagnose import diagnose
 

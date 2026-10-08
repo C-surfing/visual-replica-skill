@@ -15,6 +15,7 @@ dependencies = [
   "numpy>=1.26",
   "scikit-image>=0.22",
   "opencv-python-headless>=4.9",
+  "PyYAML>=6.0",
 ]
 
 [project.optional-dependencies]
