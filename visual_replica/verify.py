@@ -152,7 +152,19 @@ def verify_contract(
                    "已声明的自动检查完成，但这不代表设计已经得到你的认可。"
                    if report["status"] == "PASS" else
                    "部分审美选择仍待确认；没有截图或自动检查时也可以继续完善设计。")
-    pending = "\n".join(f"- {item}" for item in report["manual_review"])
+    pending_lines = []
+    for item in intent.get("preserve", []):
+        if item["provenance"] == "user-confirmed":
+            pending_lines.append(f"- 仍需看看实际作品有没有保留「{item['text']}」。")
+        else:
+            pending_lines.append(f"- 还需要你确认：是否希望「{item['text']}」？")
+    for item in intent.get("avoid", []):
+        pending_lines.append(f"- 需要留意有没有出现你不喜欢的「{item}」。")
+    for question in contract.get("open_questions", []):
+        pending_lines.append(f"- 尚待决定：{question}")
+    pending = "\\n".join(pending_lines)
+    if not results:
+        status_note = "目前还没有需要自动检查的页面，可以先继续确认想要的设计体验。"
     (output / "design-update.zh.md").write_text(
         briefing + "\n## 当前进展\n\n" + status_note + "\n\n"
         + ("## 仍需判断的地方\n\n" + pending + "\n" if pending else ""),
