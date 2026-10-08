@@ -162,7 +162,7 @@ def verify_contract(
         pending_lines.append(f"- 需要留意有没有出现你不喜欢的「{item}」。")
     for question in contract.get("open_questions", []):
         pending_lines.append(f"- 尚待决定：{question}")
-    pending = "\\n".join(pending_lines)
+    pending = "\n".join(pending_lines)
     if not results:
         status_note = "目前还没有需要自动检查的页面，可以先继续确认想要的设计体验。"
     (output / "design-update.zh.md").write_text(

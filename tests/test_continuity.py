@@ -60,7 +60,7 @@ def test_guard_detects_silent_change_to_approved_taste():
     result = guard_confirmed_decisions(old, new)
     assert result["status"] == "REVIEW_REQUIRED"
     assert "calm.text" in result["changes"][0]["what"]
-    assert "需要你重新决定" in render_guard(result)
+    assert "需要你决定是否更改" in render_guard(result)
 
 
 def test_guard_detects_changed_approved_reference():
