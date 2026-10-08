@@ -16,38 +16,44 @@ ACTION_TYPES = {"click", "fill", "press", "check", "uncheck", "wait_for"}
 ASSERTIONS = {"visible", "hidden", "text_contains"}
 ID = re.compile(r"^[a-zA-Z][a-zA-Z0-9_-]*$")
 
-EXAMPLE = """# Design Intent Contract v1
-# Generated as an editable example. Nothing here implies user approval.
+EXAMPLE = """# Design Intent Contract v1. This draft is NOT user-approved.
 version: 1
 mode: transfer
 source:
-  prototype: ./prototype/index.html
   approved: false
+direction:
+  product: A focused reading workspace
+  audience: People who collect references and read
+  desired_feeling: Quiet, spacious, intentional
+  primary_action: Start reading without distraction
+  success_looks_like: The most important content is immediately obvious
+references:
+  - id: layout
+    source: https://example.com/reference-a
+    borrow: Spacious composition and text hierarchy
+    not_copy: Brand identity and decorative details
+    why: It makes the main content easy to find
+  - id: interaction
+    source: https://example.com/reference-b
+    borrow: Quiet navigation
+    not_copy: Its color palette
+    why: Navigation should not compete with reading
 intent:
   preserve:
-    - text: Primary call-to-action remains visually dominant
+    - id: focus
+      text: Keep reading content visually dominant
+      reason: Readers come here to focus, not browse dashboards
       provenance: agent-inferred
       critical: true
   avoid:
-    - Unnecessary decorative cards
+    - Decorative dashboards around reading content
   allowed_changes:
-    - Responsive rearrangement
+    - Adapt spacing across devices without losing focus
+open_questions:
+  - Which typography reference matches your intended mood?
+iterations: []
 checks:
-  scenarios:
-    - id: desktop
-      url: http://localhost:3000/
-      viewport: {width: 1440, height: 900, dpr: 1}
-      ready_selector: main
-      inspect_selectors: ["main", "header"]
-      assertions:
-        - {selector: "main", condition: visible}
-    - id: mobile
-      url: http://localhost:3000/
-      viewport: {width: 390, height: 844, dpr: 1}
-      assertions:
-        - {selector: "main", condition: visible}
-# To enable image comparison, set each scenario's reference to an approved PNG.
-# Add min_fidelity only if a project-specific threshold has been calibrated.
+  scenarios: []  # Screenshots and browser checks are optional
 """
 
 
@@ -90,11 +96,44 @@ def validate_contract(data: Any) -> dict[str, Any]:
     for field in ("prototype", "design_system", "figma_url"):
         if field in source:
             _string(source[field], f"source.{field}")
+    direction = _object(doc.get("direction", {}), "direction")
+    for field in ("product", "audience", "desired_feeling", "primary_action", "success_looks_like"):
+        if field in direction:
+            _string(direction[field], f"direction.{field}")
+    references = _list(doc.get("references", []), "references")
+    ref_ids = set()
+    for i, ref in enumerate(references):
+        loc = f"references[{i}]"
+        ref = _object(ref, loc)
+        key = _string(ref.get("id"), f"{loc}.id")
+        if not ID.fullmatch(key) or key in ref_ids:
+            raise ContractError(f"{loc}.id must be unique and stable")
+        ref_ids.add(key)
+        for field in ("source", "borrow", "not_copy", "why"):
+            _string(ref.get(field), f"{loc}.{field}")
+    _strings(doc.get("open_questions", []), "open_questions")
+    for i, iteration in enumerate(_list(doc.get("iterations", []), "iterations")):
+        loc = f"iterations[{i}]"
+        item = _object(iteration, loc)
+        if type(item.get("round")) is not int or item["round"] <= 0:
+            raise ContractError(f"{loc}.round must be a positive integer")
+        for field in ("user_feedback", "agreed_change"):
+            _string(item.get(field), f"{loc}.{field}")
+        if item.get("status") not in {"proposed", "confirmed", "rejected"}:
+            raise ContractError(f"{loc}.status must be proposed, confirmed or rejected")
     intent = _object(doc.get("intent", {}), "intent")
+    choice_ids = set()
     for i, entry in enumerate(_list(intent.get("preserve", []), "intent.preserve")):
         loc = f"intent.preserve[{i}]"
         item = _object(entry, loc)
         _string(item.get("text"), f"{loc}.text")
+        if "id" in item:
+            key = _string(item["id"], f"{loc}.id")
+            if not ID.fullmatch(key) or key in choice_ids:
+                raise ContractError(f"{loc}.id must be unique and stable")
+            choice_ids.add(key)
+        if "reason" in item:
+            _string(item["reason"], f"{loc}.reason")
         if item.get("provenance") not in PROVENANCE:
             raise ContractError(f"{loc}.provenance must be explicit: {sorted(PROVENANCE)}")
         if "critical" in item and type(item["critical"]) is not bool:
@@ -104,10 +143,10 @@ def validate_contract(data: Any) -> dict[str, Any]:
     for field in ("avoid", "allowed_changes"):
         _strings(intent.get(field, []), f"intent.{field}")
 
-    checks = _object(doc.get("checks"), "checks")
-    scenarios = _list(checks.get("scenarios"), "checks.scenarios")
-    if not scenarios:
-        raise ContractError("checks.scenarios must include at least one scenario")
+    checks = _object(doc.get("checks", {}), "checks")
+    scenarios = _list(checks.get("scenarios", []), "checks.scenarios")
+    if doc["mode"] == "replica" and not scenarios:
+        raise ContractError("replica mode requires at least one reference scenario")
     seen = set()
     for i, candidate in enumerate(scenarios):
         loc = f"checks.scenarios[{i}]"
