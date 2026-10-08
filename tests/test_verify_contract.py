@@ -31,7 +31,7 @@ def contract(reference=True, threshold=True, preserve=False):
 
 def runner(status="PASS"):
     def simulate(command, **kwargs):
-        _, _, spec, evidence, screenshot = command
+        _, _, _, evidence, screenshot = command
         Image.new("RGB", (320, 240), "white").save(screenshot)
         write_json(evidence, {
             "status": status,
