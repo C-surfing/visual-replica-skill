@@ -1,21 +1,21 @@
-<div align="center">
+<h1 align="center">Visual Replica</h1>
+<p align="center"><strong>让设计意图贯穿每一轮迭代。</strong></p>
+<p align="center">一个轻量的 Agent Skill：把分散的视觉参考整理成共同认可的设计方向，并让这些选择在后续实现与修改中得以延续。</p>
 
-# Visual Replica
-
-**让设计意图贯穿每一轮迭代。**
-
-一个轻量的 Agent Skill：把分散的视觉参考整理成共同认可的设计方向，并让这些选择在后续实现与修改中得以延续。
-
-<p>
+<p align="center">
   <a href="https://github.com/C-surfing/visual-replica-skill/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/C-surfing/visual-replica-skill/actions/workflows/ci.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/C-surfing/visual-replica-skill"></a>
   <a href="pyproject.toml"><img alt="Python 3.10+" src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white"></a>
   <img alt="Agent Skill" src="https://img.shields.io/badge/Agent-Skill-334155">
 </p>
 
-[**快速开始**](#快速开始) · [**推荐工作流**](#推荐工作流) · [**设计意图契约**](#设计意图契约) · [**项目边界**](#项目边界) · [**English**](README.md)
-
-</div>
+<p align="center">
+  <a href="#快速开始"><strong>快速开始</strong></a> ·
+  <a href="#推荐工作流"><strong>推荐工作流</strong></a> ·
+  <a href="#设计意图契约"><strong>设计意图契约</strong></a> ·
+  <a href="#项目边界"><strong>项目边界</strong></a> ·
+  <a href="README.md"><strong>English</strong></a>
+</p>
 
 ---
 

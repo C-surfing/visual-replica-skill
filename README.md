@@ -1,21 +1,21 @@
-<div align="center">
+<h1 align="center">Visual Replica</h1>
+<p align="center"><strong>Design intent, carried through every iteration.</strong></p>
+<p align="center">A lightweight, agent-native skill for turning visual references into a shared design direction — and keeping that direction intact as the interface evolves.</p>
 
-# Visual Replica
-
-**Design intent, carried through every iteration.**
-
-A lightweight, agent-native skill for turning visual references into a shared design direction — and keeping that direction intact as the interface evolves.
-
-<p>
+<p align="center">
   <a href="https://github.com/C-surfing/visual-replica-skill/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/C-surfing/visual-replica-skill/actions/workflows/ci.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/C-surfing/visual-replica-skill"></a>
   <a href="pyproject.toml"><img alt="Python 3.10+" src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white"></a>
   <img alt="Agent Skill" src="https://img.shields.io/badge/Agent-Skill-334155">
 </p>
 
-[**Getting started**](#quick-start) · [**Workflow**](#the-workflow) · [**Design contract**](#design-intent-contract) · [**Documentation**](#documentation) · [**简体中文**](README.zh-CN.md)
-
-</div>
+<p align="center">
+  <a href="#quick-start"><strong>Getting started</strong></a> ·
+  <a href="#the-workflow"><strong>Workflow</strong></a> ·
+  <a href="#design-intent-contract"><strong>Design contract</strong></a> ·
+  <a href="#documentation"><strong>Documentation</strong></a> ·
+  <a href="README.zh-CN.md"><strong>简体中文</strong></a>
+</p>
 
 ---
 
