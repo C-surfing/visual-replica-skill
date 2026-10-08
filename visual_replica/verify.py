@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from .compare import compare_images
+from .continuity import render_brief
 from .intent import load_contract
 from .utils import read_json, write_json
 
@@ -33,7 +34,7 @@ def _overall_status(scenarios: list[dict[str, Any]], review_items: list[str]) ->
         return "ERROR"
     if "FAIL" in statuses:
         return "FAIL"
-    if "REVIEW_REQUIRED" in statuses or review_items:
+    if not statuses or "REVIEW_REQUIRED" in statuses or review_items:
         return "REVIEW_REQUIRED"
     return "PASS"
 
@@ -59,7 +60,7 @@ def verify_contract(
     comparator = comparator or compare_images
     results: list[dict[str, Any]] = []
 
-    for scenario in contract["checks"]["scenarios"]:
+    for scenario in contract.get("checks", {}).get("scenarios", []):
         name = scenario["id"]  # validated as a safe directory name
         folder = output / name
         folder.mkdir(parents=True, exist_ok=True)
@@ -143,6 +144,20 @@ def verify_contract(
     }
     write_json(output / "verification.json", report)
     _render_report(report, output)
+    briefing = render_brief(contract, lang="zh")
+    status_note = ("已发现明确未通过的检查，仍需修正。"
+                   if report["status"] == "FAIL" else
+                   "检查未能正常完成，需要处理运行问题。"
+                   if report["status"] == "ERROR" else
+                   "已声明的自动检查完成，但这不代表设计已经得到你的认可。"
+                   if report["status"] == "PASS" else
+                   "部分审美选择仍待确认；没有截图或自动检查时也可以继续完善设计。")
+    pending = "\n".join(f"- {item}" for item in report["manual_review"])
+    (output / "design-update.zh.md").write_text(
+        briefing + "\n## 当前进展\n\n" + status_note + "\n\n"
+        + ("## 仍需判断的地方\n\n" + pending + "\n" if pending else ""),
+        encoding="utf-8",
+    )
     return report
 
 

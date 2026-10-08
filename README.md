@@ -1,138 +1,86 @@
 # Visual Replica
 
-**Preserve design intent. Verify the actual interface.**
+**Make the interface the user actually wanted — and keep it that way through every iteration.**
 
-Visual Replica is a model-independent **Agent Skill + executable evidence toolkit**. It helps coding agents reproduce approved screenshots, preserve decisions while moving from prototype to production code, and detect regressions without confusing pixel similarity with usability or design quality.
+**Design Intent Continuity** is a small, model-independent Agent Skill that helps turn scattered visual references and vague aesthetic preferences into an agreed direction that survives code generation, redesigns and feedback rounds.
 
-It is **not** a UI generator, Figma clone, design system, aesthetic prompt library, or autonomous code editor. Use oil-ui, Impeccable, OpenDesign, Figma and your preferred coding agent for those roles. Visual Replica specializes in evidence and declared acceptance boundaries.
+[中文说明](README.zh-CN.md) · [Skill instructions](SKILL.md) · [Design dialogue](references/design-dialogue.md)
 
-## Three workflows
+## The problem
 
-| Mode | Input | What it verifies |
-| --- | --- | --- |
-| **Replica** | Approved screenshots | Rendered fidelity at known viewports/states |
-| **Transfer** | HTML/Figma prototype and declared decisions | Visual references, browser state assertions, decision retention |
-| **Preservation** | Existing application and design constraints | Changed states, behavior assertions and any supplied baselines |
+A user might love **site A's composition**, **site B's typography**, and **site C's interaction**. They want a coherent product, not three screenshots pasted together. Even excellent coding agents can produce a convincing first page, then slowly move away from the chosen hierarchy, feeling and priorities as the implementation changes.
 
-**Important:** A screenshot is evidence of appearance, not proof of product quality. Qualitative "preserve" and "avoid" requirements always require a human review. Inferred decisions are not automatically user-confirmed.
+The hard part is not describing a screenshot. It is remembering **what they liked, why, what should not be copied, what has been approved, and what remains unfinished**.
 
-## Quick start
+This Skill makes those decisions explicit and revisitable without turning design into a checklist of CSS values.
 
-For the Python toolkit (Python 3.10+):
+## The workflow we recommend
 
-~~~bash
-python -m venv .venv
-source .venv/bin/activate
+1. **Explore.** Gather references with Awwwards, Mobbin, Godly, Pinterest or your own collection. Explain which quality of each example you want. Use [oil-ui](https://github.com/oil-oil/oil-ui) to explore different directions if needed.
+2. **Agree.** Use Figma, [OpenDesign](https://github.com/nexu-io/open-design), a quick prototype or a design conversation to choose a direction. Visual Replica records what to borrow, what to avoid and what should feel different in your product.
+3. **Build.** Let Codex, Claude Code or another coding agent implement with your existing design system. [Impeccable](https://github.com/pbakaus/impeccable) can provide dedicated design critique and polish.
+4. **Refine.** Look at the actual experience with the agent. Ask "Does this still feel like what we chose?" rather than "Did the CSS satisfy the screenshot score?" Record important feedback, preserve confirmed decisions and iterate.
+5. **Check only when useful.** Browser tests and screenshots are optional evidence. The host agent may already have excellent visual inspection. Visual Replica should never demand redundant capture or pretend that image similarity equals aesthetic approval.
+
+**Simple rule:** design decisions belong to the person; execution belongs to the agent; continuity is shared and reviewable.
+
+## What the person sees
+
+> **Our direction:** Quiet and editorial, with the content as the main character.  
+> **What you liked:** Layout from A, type hierarchy from B, interaction from C — not A's branding or C's loud colors.  
+> **Closer now:** The main content has room to breathe.  
+> **Still off:** The navigation still competes too much with the headline.  
+> **One choice for you:** Do you want the navigation even quieter, or is discoverability more important?
+
+No requirement to read DOM dumps, review CSS, understand accessibility audit IDs or compare SSIM scores.
+
+## What makes this different?
+
+Visual Replica does **not** claim to be a better designer than oil-ui, Impeccable, Figma, OpenDesign or a newer model. It also does not create another design editor, component library, screenshot loop or coding agent.
+
+Its narrow responsibility is **keeping intentional choices explicit during repeated edits**. When an approved choice changes, it raises the change for confirmation instead of quietly rewriting it. A new agent can resume work from the same task agreement.
+
+This is **not an unassailable moat**. More capable agents may absorb generic prompt-based design coaching. Our investment is in a portable, human-reviewable agreement and evidence that this workflow actually reduces aesthetic drift. If it does not, we should simplify rather than add more framework.
+
+## Minimal start
+
+For small tasks, simply use the [SKILL.md](SKILL.md) with your coding agent and converse normally. For a design that will take several rounds, it can maintain an optional `intent.yaml`.
+
+```bash
 pip install -e .
-~~~
-
-For browser-backed checks (Node.js and Chromium):
-
-~~~bash
-npm install
-npx playwright install chromium
-~~~
-
-Start with an editable, **unapproved** design intent contract:
-
-~~~bash
 visual-replica intent init --out intent.yaml
-visual-replica intent validate --spec intent.yaml
-~~~
+visual-replica intent brief --spec intent.yaml --lang en
+```
 
-Edit its URLs, scenarios and assertions; add approved image references where available. Then run:
+The starter agreement is a **draft**, with examples you must replace; it does not pretend the user approved anything. It works before there is code, a screenshot or a running website.
 
-~~~bash
-visual-replica verify --spec intent.yaml --out-dir .visual-replica/verification
-~~~
+For subsequent rounds, keep the previous contract snapshot and check changes:
 
-Open the local HTML report at `.visual-replica/verification/index.html`, or inspect `verification.json`. These outputs contain scenario screenshots, browser assertions, selected DOM bounds/computed style evidence, image comparison artifacts when references exist, and items still requiring human review.
+```bash
+visual-replica intent guard --before intent.previous.yaml --after intent.yaml --lang en
+```
 
-### Exit/status semantics
+This flags changed approved choices for the user to decide. It **does not** automatically prove or register the user's consent.
 
-| Status | CLI exit | Meaning |
-| --- | --- | --- |
-| `PASS` | 0 | All **declared automated** checks pass, with no unresolved qualitative requirements |
-| `REVIEW_REQUIRED` | 1 | Visual baseline missing, threshold uncalibrated, or a qualitative design decision remains |
-| `FAIL` | 2 | An explicit browser assertion or calibrated visual threshold fails |
-| `ERROR` | 3 | Invalid contract or execution/environment problem |
+A task agreement describes `direction`, mixed `references`, `intent`, `open_questions` and feedback `iterations`. Read [the reference](references/intent-contract.md) or [the multi-reference example](examples/mixed-references.md). A project's existing `DESIGN.md` remains the source of its design system.
 
-A passing result does **not** certify an entire UI as beautifully designed or accessible.
+## Optional visual evidence toolkit
 
-## Design Intent Contract v1
+The original high-fidelity screenshot comparison tools remain available for users who explicitly want them:
 
-The contract is *per task/surface*. It does not replace a project's `DESIGN.md` or product facts. A decision records its text, provenance (`user-confirmed`, `agent-inferred`, `tool-extracted`) and optionally whether it is critical. Confirmation is only valid when the source was explicitly approved. Automated checks are separate.
-
-~~~yaml
-version: 1
-mode: transfer
-source:
-  prototype: ./prototype/index.html
-  approved: true
-intent:
-  preserve:
-    - text: Primary call-to-action must remain dominant
-      provenance: user-confirmed
-      critical: true
-  avoid:
-    - Unnecessary decorative cards
-  allowed_changes:
-    - Mobile layout can rearrange
-checks:
-  scenarios:
-    - id: desktop
-      url: http://localhost:3000/
-      viewport: {width: 1440, height: 900, dpr: 1}
-      ready_selector: main
-      actions:
-        - {type: click, selector: "#menu-button"}
-      assertions:
-        - {selector: "#menu", condition: visible}
-      inspect_selectors: ["main", "#menu"]
-      # reference: ./reference/desktop-menu.png
-      # min_fidelity: 0.92 # Optional, calibrate for your app
-~~~
-
-Supported action types: `click`, `fill`, `press`, `check`, `uncheck`, `wait_for`. Assertion conditions: `visible`, `hidden`, `text_contains`. Each scenario has an independent viewport, state and evidence folder. Scenario references and optional region files are resolved relative to the contract.
-
-See [Contract and evidence model](references/intent-contract.md) for acceptance semantics and known limitations.
-
-## Existing screenshot-replication toolkit
-
-The existing deterministic tools remain available; none of the contract commands modifies application code:
-
-~~~bash
-visual-replica doctor
-visual-replica analyze reference.png --out .visual-replica/reference-analysis.json
+```bash
+npm install && npx playwright install chromium
 visual-replica capture http://localhost:3000 --width 390 --height 844 --out candidate.png
 visual-replica compare reference.png candidate.png --out-dir .visual-replica/compare
-visual-replica diagnose .visual-replica/compare/comparison.json --repo . --out .visual-replica/diagnosis.json
-visual-replica report --comparison .visual-replica/compare/comparison.json \
-  --diagnosis .visual-replica/diagnosis.json --out-dir .visual-replica/report
-visual-replica benchmark benchmarks/manifest.example.json
-~~~
+visual-replica verify --spec intent.yaml
+```
 
-Comparison uses pixel/edge/SSIM/multi-scale metrics, hotspots and optional LPIPS. A score is not a universal percentage of "design quality"; region or whole-page acceptance thresholds should be calibrated per project. Root-cause suggestions are hypotheses, **not proven DOM-to-source mappings**.
+The toolkit includes comparison metrics, detected discrepancies, diagnosis hypotheses, browser scenarios and HTML/JSON evidence. None of them replace subjective approval. `verify` with no browser scenarios returns `REVIEW_REQUIRED`, not a misleading PASS.
 
-## Integration philosophy
+## Contribution priorities
 
-- **Taste / direction:** humans with oil-ui, Mobbin and other inspiration sources.
-- **Prototype / design system:** Figma, OpenDesign or a simple working HTML prototype.
-- **Implementation:** Codex, Claude Code or another coding agent, retaining the product's architecture.
-- **Verification:** Visual Replica captures reproducible evidence; existing accessibility and testing tools handle their own domains.
+- **Core:** clearer agreements, mixed-reference intent, feedback continuity, protection against silently changed confirmed choices.
+- **Review:** optional visual and interaction evidence, task-level acceptance studies.
+- **Delegate / reuse:** screenshot capture, component libraries, design generation, Figma parsing and generic design-rule catalogs.
 
-No mandatory online account, style library, editor UI or custom Figma parser. See [Integrations](references/integrations.md).
-
-## Development and validation
-
-~~~bash
-pip install -e '.[dev]'
-pytest
-ruff check visual_replica tests
-~~~
-
-The test suite includes contract validation, pure orchestration tests and a real Playwright state/DOM smoke test. GitHub CI installs Chromium for that browser test. The older visual comparison tests remain. Synthetic success is not represented as production-world design acceptance.
-
-See [VALIDATION.md](VALIDATION.md) for the historical v0.12.0 release record; current CI status is authoritative for subsequent changes.
-
-MIT licensed. Contributions are welcome; please preserve the boundary between design generation and evidence-based verification.
+[MIT License](LICENSE). Python 3.10+ for optional CLI; no mandatory app, server, Figma account or screenshot workflow.

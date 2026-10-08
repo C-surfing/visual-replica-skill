@@ -1,45 +1,40 @@
-# Design Intent Contract v1
+# Task-level design intent contract (version 1)
 
-**Scope:** a task-specific acceptance boundary, not a design system, style library or Figma parser. Keep existing `PRODUCT.md` / `DESIGN.md` as durable sources of project facts and tokens.
+The contract is a small portable agreement that belongs to one UI task or surface. Its main responsibility is **carrying human taste and decisions through repeated Agent work**. It is not a design system, style generator, or pixel-specification schema.
 
-## Distinguish what can be proven
+Use `visual-replica intent init` to create a sample and replace all illustrative values before showing it to the user. `intent brief` renders a plain-language version. Existing version-1 screenshot contracts remain readable.
 
-| Evidence | Can establish | Cannot establish |
-| --- | --- | --- |
-| Pixel/edge/SSIM comparison | Appearance at a fixed viewport and state | Usability or visual taste |
-| Playwright action + assertion | The declared state/action produced a visible outcome | All user flows or backend correctness |
-| DOM bounds/computed styles | Observed positions, type and box properties | Which source line is causally responsible |
-| Human qualitative review | Whether hierarchy and brand decisions are acceptable | Reproducibility without a recorded decision |
+## What's recorded
 
-A model may draft the contract but must not self-certify its assumptions. All `preserve` entries contain one of `user-confirmed`, `agent-inferred` or `tool-extracted`. Only the first represents an approved decision, and `source.approved` must then be true.
+- `direction` (optional): `product`, `audience`, `desired_feeling`, `primary_action`, `success_looks_like`. These describe desired human experience, not implementation.
+- `references` (optional): a list of entries with stable `id`, `source`, `borrow`, `not_copy`, `why`. Multiple inspirations can supply different parts of the final design.
+- `intent.preserve`: decisions with `text`, `provenance`, optional stable `id`, `reason`, `critical`. Provenance is `user-confirmed`, `agent-inferred` or `tool-extracted`.
+- `intent.avoid` and `intent.allowed_changes`: a few important boundaries.
+- `open_questions`: decisions that still affect the design direction.
+- `iterations` (optional): meaningful round `round`, actual `user_feedback`, `agreed_change`, and `status` (`proposed`, `confirmed`, `rejected`). Do not invent comments or implied approvals.
+- `source.approved`: a declaration of explicit approval made outside this tool. Any `user-confirmed` preserved choice requires this flag; the tool **cannot authenticate user consent**.
+- `checks.scenarios`: optional browser/image checks. Transfer and preservation contracts may have no scenarios. Replica mode requires at least one reference scenario.
 
-## Contract fields
+These fields are optional where indicated so simple projects can remain small. A user's own words and current visual references should be kept ahead of generic design boilerplate.
 
-- `version`: integer `1`.
-- `mode`: `replica`, `transfer`, or `preservation`.
-- `source`: optional `prototype`, `design_system`, `figma_url`, and boolean `approved`.
-- `intent.preserve`: list of `{text, provenance, critical?}`; these remain **human review items**. No image score automatically approves them.
-- `intent.avoid`, `intent.allowed_changes`: text lists. Avoid requirements are explicitly reviewed; allowed changes inform the human/code agent.
-- `checks.scenarios`: non-empty list of independently named scenarios. Each requires an HTTP(S) `url`, a `viewport` containing `width`, `height`, optional `dpr`, and a unique `id`.
+## Continuing across rounds
 
-A scenario optionally declares `ready_selector`, ordered `actions`, `assertions`, `inspect_selectors`, `reference`, `regions` and `min_fidelity`. URLs must be reachable by the local browser. Reference/regions file paths resolve relative to the contract's location. `replica` requires every scenario to supply a baseline.
+Save a previous snapshot of the approved contract before modifying it. Run:
 
-Supported actions: `click`, `fill` (with `value`), `press` (with `value`), `check`, `uncheck`, `wait_for`. Supported conditions: `visible`, `hidden`, `text_contains` (with `value`). Prefer semantic selectors, `data-testid` for stable state anchors, or Playwright-supported CSS selectors.
+```bash
+visual-replica intent guard --before intent.previous.yaml --after intent.yaml
+```
 
-## Execution and results
+This flags edits to confirmed preserved choices as well as changed direction, reference roles and avoid choices when the original source was marked approved. Agent-inferred notes, pending feedback and open questions can be revised without treating them as confirmed decisions.
 
-For each scenario, the browser opens an isolated context at the declared viewport/DPR, performs actions, waits for font/image decode after reaching the target state, checks selectors, records selected DOM boxes and computed styles, and takes a screenshot.
+The result is a **request for review**, not a permission system: the agent should ask the user and only then record an approved new choice. The tool does not prevent someone from manually deleting a snapshot or claiming approval without evidence.
 
-When a reference exists the Python comparator records raw metrics/artifacts. `min_fidelity` is **optional** and must be deliberately calibrated against your design, browser, font rasterizer and allowable content variance. Without a calibrated threshold, visual comparison requires human review regardless of numeric score.
+## Optional browser checks
 
-Overall status precedence: `ERROR` if an execution/asset error occurs; otherwise `FAIL` if any declared assertion/threshold fails; otherwise `REVIEW_REQUIRED` if a baseline/threshold or qualitative review is outstanding; otherwise `PASS`.
+If you need to test implemented appearance, `checks.scenarios` can contain `id`, `url`, `viewport`, optional `ready_selector`, `actions`, `assertions`, `inspect_selectors`, `reference`, `regions`, and `min_fidelity`.
 
-CLI exits with `0`, `2`, `1`, or `3` respectively for `PASS`, `FAIL`, `REVIEW_REQUIRED`, `ERROR`. The machine-readable `verification.json` is authoritative for automation.
+Browser actions: `click`, `fill`, `press`, `check`, `uncheck`, `wait_for`. Conditions: `visible`, `hidden`, `text_contains`. Image acceptance thresholds require calibration to the environment and task. A screenshot cannot certify intent.
 
-## Limitations and hardening roadmap
+`verify` reports `PASS` (declared automated checks only), `FAIL`, `ERROR`, `REVIEW_REQUIRED`. If the contract has no scenarios, it yields `REVIEW_REQUIRED` and can still generate a human-readable design summary without opening a browser.
 
-1. A contract is a declaration, not cryptographic evidence that the source really was approved. A human must check provenance.
-2. Browser assertions are a deliberately small subset of Playwright. Use your existing accessibility/security/performance tests rather than expanding this project into every QA discipline.
-3. CSS selectors and screenshots do not establish real source ownership. Correlating DOM with component mapping is a future optional adapter; do not overstate the current diagnostic precision.
-4. Browser capture disables animations to stabilize snapshots. It does not validate motion behavior, non-browser UI, or arbitrary asynchronous application protocols.
-5. Never auto-bless references. Modifying an approved baseline is a separate, explicit review action.
+Never require a visual metric when a user simply wants help articulating a design direction. Never claim a passing screenshot proves that the user likes the result.

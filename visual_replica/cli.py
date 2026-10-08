@@ -9,6 +9,7 @@ from pathlib import Path
 from .analyze import analyze_reference
 from .benchmark import run_benchmark
 from .compare import compare_images
+from .continuity import guard_confirmed_decisions, render_brief, render_guard
 from .diagnose import diagnose_file
 from .doctor import doctor
 from .intent import ContractError, init_contract, load_contract
@@ -28,6 +29,13 @@ def main(argv=None):
     intent_cmd=intent.add_subparsers(dest="intent_command",required=True)
     intent_init=intent_cmd.add_parser("init");intent_init.add_argument("--out",default="intent.yaml")
     intent_validate=intent_cmd.add_parser("validate");intent_validate.add_argument("--spec",default="intent.yaml")
+    intent_brief=intent_cmd.add_parser("brief",help="Describe desired design in everyday language")
+    intent_brief.add_argument("--spec",default="intent.yaml")
+    intent_brief.add_argument("--lang",choices=["zh","en"],default="zh")
+    intent_guard=intent_cmd.add_parser("guard",help="Flag changes to approved design decisions")
+    intent_guard.add_argument("--before",required=True)
+    intent_guard.add_argument("--after",required=True)
+    intent_guard.add_argument("--lang",choices=["zh","en"],default="zh")
     verification=sub.add_parser("verify",help="Run design contract scenarios with evidence")
     verification.add_argument("--spec",default="intent.yaml")
     verification.add_argument("--out-dir",default=".visual-replica/verification")
@@ -44,9 +52,15 @@ def main(argv=None):
         try:
             if a.intent_command=="init":
                 _print({"status":"OK","contract":str(init_contract(a.out)),"approved":False})
+            elif a.intent_command=="brief":
+                print(render_brief(load_contract(a.spec),lang=a.lang))
+            elif a.intent_command=="guard":
+                result=guard_confirmed_decisions(load_contract(a.before),load_contract(a.after))
+                print(render_guard(result,lang=a.lang))
+                return 1 if result["changes"] else 0
             else:
                 doc=load_contract(a.spec)
-                _print({"status":"OK","mode":doc["mode"],"scenarios":len(doc["checks"]["scenarios"])})
+                _print({"status":"OK","mode":doc["mode"],"scenarios":len(doc.get("checks",{}).get("scenarios",[]))})
             return 0
         except (ContractError, OSError) as exc:
             _print({"status":"ERROR","reason":str(exc)});return 3
